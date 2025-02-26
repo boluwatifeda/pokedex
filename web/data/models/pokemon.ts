@@ -3,6 +3,8 @@
  * API: https://pokeapi.co/api/v2/pokemon/{pokemon-name}/
  */
 export type Pokemon = {
+  //ID of the pokemon
+  id: number;
   // The name of the Pokemon
   name: string;
   // The types of the Pokemon and their order (ex. fire, water, etc.)
