@@ -1,75 +1,29 @@
 import { Pokemon } from '@/data/models/pokemon';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
 import { typeToColor } from '@/components/Typing';
 import { PokemonSpecies } from '@/data/models/pokemon-species';
 import { formatFlavorText } from '@/utils/flavor-text-formatter';
 import Link from 'next/link';
+import { GetServerSideProps } from 'next';
 
-export default function PokemonPage() {
+interface PokemonPageProps {
+  pokemonData: Pokemon;
+  speciesData: PokemonSpecies;
+  devolutionData: Pokemon | null;
+}
+
+export default function PokemonPage({
+  pokemonData,
+  speciesData,
+  devolutionData
+}: PokemonPageProps) {
   const router = useRouter();
-  const [pokemonData, setPokemonData] = useState<Pokemon>();
-  const [speciesData, setSpeciesData] = useState<PokemonSpecies>();
-  const [devolutionData, setDevolutionData] = useState<Pokemon>();
-
-  useEffect(() => {
-    if (!router.query.pokemon) return;
-
-    const fetchPokemon = async () => {
-      try {
-        const response = await fetch(
-          `https://pokeapi.co/api/v2/pokemon/${router.query.pokemon}`
-        );
-        const data = await response.json();
-        setPokemonData(data);
-      } catch (e) {
-        console.log('Failed to fetch Pokémon image', e);
-      }
-    };
-
-    fetchPokemon();
-  }, [router.query.pokemon]);
-
-  useEffect(() => {
-    const fetchPokemonSpecies = async () => {
-      try {
-        const response = await fetch(
-          `https://pokeapi.co/api/v2/pokemon-species/${router.query.pokemon}`
-        );
-        const data = await response.json();
-        setSpeciesData(data);
-      } catch (e) {
-        console.log('Failed to fetch Pokémon image', e);
-      }
-    };
-
-    fetchPokemonSpecies();
-  }, [router.query.pokemon]);
 
   const image = pokemonData?.sprites.front_default;
   const moves = pokemonData?.moves;
   const stats = pokemonData?.stats;
   const types = pokemonData?.types;
-
-  const devolution = speciesData?.evolves_from_species;
-  useEffect(() => {
-    if (!devolution) return;
-
-    const fetchDevolution = async () => {
-      try {
-        const response = await fetch(
-          `https://pokeapi.co/api/v2/pokemon/${devolution.name}`
-        );
-        const data = await response.json();
-        setDevolutionData(data);
-      } catch (e) {
-        console.log('Failed to fetch Pokémon image', e);
-      }
-    };
-
-    fetchDevolution();
-  }, [devolution]);
 
   return (
     <div className="bg-[#444444] w-screen min-h-screen flex justify-center">
@@ -232,3 +186,34 @@ export default function PokemonPage() {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
   }
 }
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { pokemon } = context.query;
+
+  // Fetch Pokémon data
+  const pokemonResponse = await fetch(
+    `https://pokeapi.co/api/v2/pokemon/${pokemon}`
+  );
+  const pokemonData = pokemonResponse.ok ? await pokemonResponse.json() : null;
+
+  // Fetch Pokémon species data
+  const speciesResponse = await fetch(
+    `https://pokeapi.co/api/v2/pokemon-species/${pokemon}`
+  );
+  const speciesData = speciesResponse.ok ? await speciesResponse.json() : null;
+
+  // Fetch devolution data if available
+  const devolutionData = speciesData.evolves_from_species
+    ? await fetch(
+        `https://pokeapi.co/api/v2/pokemon/${speciesData.evolves_from_species.name}`
+      ).then((res) => res.json())
+    : null;
+
+  return {
+    props: {
+      pokemonData,
+      speciesData,
+      devolutionData
+    }
+  };
+};
