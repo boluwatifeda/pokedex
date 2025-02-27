@@ -15,6 +15,7 @@ const queryClient = new QueryClient();
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
+
   const isPokemonPage =
     router.isReady && typeof router.query.pokemon === 'string';
 

@@ -4,13 +4,36 @@ import Icon from '@/components/Icon';
 import { Pokedex } from '@/data/models/pokedex';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GrNext, GrPrevious } from 'react-icons/gr';
 
 const PAGE_SIZE = 24;
 
 export default function Home() {
-  const [index, setIndex] = useState<number>(0);
+  const [index, setIndex] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      return parseInt(sessionStorage.getItem('pokedexIndex') || '0', 10);
+    }
+    return 0;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedIndex = sessionStorage.getItem('pokedexIndex');
+      if (storedIndex) {
+        setIndex(parseInt(storedIndex, 10));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedIndex = sessionStorage.getItem('pokedexIndex');
+      if (storedIndex !== index.toString()) {
+        sessionStorage.setItem('pokedexIndex', index.toString());
+      }
+    }
+  }, [index]);
 
   const fetchPage = async (): Promise<Pokedex> => {
     const response = await fetch(
@@ -22,7 +45,8 @@ export default function Home() {
 
   const { data, error } = useQuery({
     queryKey: ['pokedex', index],
-    queryFn: fetchPage
+    queryFn: fetchPage,
+    staleTime: 1000 * 60 * 5 // Cache data for 5 minutes
   });
 
   if (error instanceof Error) return <div>Error: {error.message}</div>;
@@ -42,7 +66,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-w-screen min-h-screen flex flex-col">
+    <div className="min-w-screen flex flex-col">
       <div className="flex justify-center items-center text-2xl font-bold space-x-80 text-black mt-8">
         <button
           onClick={handlePrev}
@@ -64,14 +88,16 @@ export default function Home() {
       <div className="flex justify-center w-9/10">
         <div className="">
           {rows.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex">
+            <div key={rowIndex} className="flex w-[1216px]">
               {row.map((pokemon, pokemonIndex) => (
                 <div
                   key={pokemonIndex}
                   className="m-8 w-1/5 text-bold text-2xl font-mono text-black text-bold">
                   <Link href={`/pokemon/${pokemon.name}`}>
                     <Icon name={pokemon.name} />
-                    <h1>{capitalizeFirstLetter(pokemon.name)}</h1>
+                    <h1 className="text-sm">
+                      {capitalizeFirstLetter(pokemon.name)}
+                    </h1>
                   </Link>
                 </div>
               ))}
