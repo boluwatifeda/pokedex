@@ -70,7 +70,6 @@ export default function Home() {
       <div className="flex justify-center items-center text-2xl font-bold space-x-80 text-black mt-8">
         <button
           onClick={handlePrev}
-          disabled={index <= 0}
           className="flex m-0 space-x-0">
           <GrPrevious />
           <GrPrevious />
@@ -78,7 +77,6 @@ export default function Home() {
 
         <button
           onClick={handleNext}
-          disabled={data?.count ? index >= data.count - 20 : true}
           className="flex m-0 space-x-0">
           <GrNext />
           <GrNext />
@@ -106,7 +104,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex justify-center align-center text-xl font-bold space-x-80 text-black mb-8 bg-white">
+      <div className="flex justify-center align-center text-2xl font-bold space-x-80 text-black mb-8 bg-white">
         <button onClick={handlePrev} className="flex m-0 space-x-0 bg-white">
           <GrPrevious />
           <GrPrevious />
@@ -121,7 +119,14 @@ export default function Home() {
   );
 
   function capitalizeFirstLetter(val: string) {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+    if (val === 'hp') {
+      return 'HP';
+    }
+
+    return val
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   function chunkArray<T>(array: T[]): T[][] {

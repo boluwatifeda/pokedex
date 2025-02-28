@@ -39,7 +39,7 @@ export default function PokemonPage({
                   height={400}
                 />
                 <h1 className="text-[#CC0000] font-mono font-medium pl-1 pr-1">
-                  {capitalizeFirstLetterName(pokemonData?.name)}
+                  {capitalizeFirstLetter(pokemonData?.name)}
                 </h1>
               </div>
             )}
@@ -53,7 +53,7 @@ export default function PokemonPage({
               {moves &&
                 moves.map((move, index) => (
                   <Link key={index} href={`../move/${move.move.name}`}>
-                    <div className="bg-slate-300 text-black text-center font-mono text-xs pl-1 pr-1 flex flex-col justify-center items-center rounded-sm hover:bg-[#CC0000] hover:text-white shadow[inset_4px_4px_10px_rgba(0,0,0,0.25)]">
+                    <div className="bg-slate-300 text-black text-center font-mono text-xs pl-1 pr-1 flex flex-col justify-center items-center rounded-sm hover:bg-[#CC0000] hover:text-white shadow[inset_4px_4px_10px_rgba(0,0,0,0.25)] h-full w-full">
                       {capitalizeFirstLetter(move.move.name)}
                     </div>
                   </Link>
@@ -180,10 +180,6 @@ export default function PokemonPage({
       .split('-')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  }
-
-  function capitalizeFirstLetterName(val: string) {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
   }
 }
 
