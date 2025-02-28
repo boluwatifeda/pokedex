@@ -19,6 +19,15 @@ export default function App({ Component, pageProps }: AppProps) {
   const isPokemonPage =
     router.isReady && typeof router.query.pokemon === 'string';
 
+  const isMovePage = router.isReady && typeof router.query.move === 'string';
+
+  const resetPageIndex = () => {
+    if (!isPokemonPage && !isMovePage) {
+      sessionStorage.setItem('pokedexIndex', '0');
+      router.reload();
+    }
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
       <div
@@ -26,6 +35,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <Link href="/">
           <MdCatchingPokemon
             className={`transition-colors duration-500 ease-in-out size-20 hover:text-[#FF0000] ${isPokemonPage ? 'text-black' : ''}`}
+            onClick={resetPageIndex}
           />
         </Link>
       </div>

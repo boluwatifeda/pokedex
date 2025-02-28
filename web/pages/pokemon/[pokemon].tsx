@@ -38,7 +38,7 @@ export default function PokemonPage({
                   width={400}
                   height={400}
                 />
-                <h1 className="text-[#CC0000] font-mono pl-1 pr-1">
+                <h1 className="text-[#CC0000] font-mono font-medium pl-1 pr-1">
                   {capitalizeFirstLetterName(pokemonData?.name)}
                 </h1>
               </div>
@@ -46,17 +46,17 @@ export default function PokemonPage({
           </div>
 
           <div className="flex flex-col justify-center mt-4">
-            <h1 className="text-white flex justify-center font-mono font-semibold text-2xl mt-3">
+            <h1 className="text-white flex justify-center font-mono font-semibold text-2xl mt-3 items-center">
               MOVES
             </h1>
-            <div className="flex flex-wrap max-w-[600px] gap-1 m-5 mt-3 justify-center">
+            <div className="grid grid-cols-5 gap-2 max-w-[600px] m-5 mt-3 justify-center">
               {moves &&
                 moves.map((move, index) => (
-                  <div
-                    key={index}
-                    className="bg-slate-300 text-black font-mono text-xs pl-1 pr-1 flex justify-center items-center rounded-sm hover:bg-[#CC0000] hover:text-white shadow[inset_4px_4px_10px_rgba(0,0,0,0.25)]">
-                    {capitalizeFirstLetter(move.move.name)}
-                  </div>
+                  <Link key={index} href={`../move/${move.move.name}`}>
+                    <div className="bg-slate-300 text-black text-center font-mono text-xs pl-1 pr-1 flex flex-col justify-center items-center rounded-sm hover:bg-[#CC0000] hover:text-white shadow[inset_4px_4px_10px_rgba(0,0,0,0.25)]">
+                      {capitalizeFirstLetter(move.move.name)}
+                    </div>
+                  </Link>
                 ))}
             </div>
           </div>
@@ -74,7 +74,7 @@ export default function PokemonPage({
                     types.map((t, index) => (
                       <p
                         key={index}
-                        className="flex justify-center font-mono"
+                        className="flex flex-col justify-center text-center font-mono font-semibold"
                         style={{ color: typeToColor[t.type.name] }}>
                         {capitalizeFirstLetter(t.type.name)}
                       </p>
@@ -190,20 +190,19 @@ export default function PokemonPage({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { pokemon } = context.query;
 
-  // Fetch Pokémon data
-  const pokemonResponse = await fetch(
-    `https://pokeapi.co/api/v2/pokemon/${pokemon}`
-  );
-  const pokemonData = pokemonResponse.ok ? await pokemonResponse.json() : null;
+  const [pokemonResponse, speciesResponse] = await Promise.all([
+    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}`),
+    fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemon}`)
+  ]);
 
-  // Fetch Pokémon species data
-  const speciesResponse = await fetch(
-    `https://pokeapi.co/api/v2/pokemon-species/${pokemon}`
-  );
-  const speciesData = speciesResponse.ok ? await speciesResponse.json() : null;
+  const pokemonData = pokemonResponse.ok
+    ? ((await pokemonResponse.json()) as Pokemon)
+    : null;
+  const speciesData = speciesResponse.ok
+    ? ((await speciesResponse.json()) as PokemonSpecies)
+    : null;
 
-  // Fetch devolution data if available
-  const devolutionData = speciesData.evolves_from_species
+  const devolutionData = speciesData?.evolves_from_species
     ? await fetch(
         `https://pokeapi.co/api/v2/pokemon/${speciesData.evolves_from_species.name}`
       ).then((res) => res.json())
