@@ -8,7 +8,6 @@ This is a Pokédex web application built with **Next.js**, **React Query**, and 
 - **React Query for Data Fetching**: Efficient caching and prefetching for smooth navigation.
 - **Dynamic Pagination**: Browse through the Pokédex in pages of 24 Pokémon.
 - **Pokémon Details**: View individual Pokémon stats, images, and types.
-- **Type-Based Background Colors**: Each Pokémon card is dynamically styled based on its type.
 
 ## Installation
 
