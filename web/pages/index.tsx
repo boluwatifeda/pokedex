@@ -2,14 +2,17 @@
 
 import Icon from '@/components/Icon';
 import { Pokedex } from '@/data/models/pokedex';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { GrNext, GrPrevious } from 'react-icons/gr';
 
-const PAGE_SIZE = 24;
+const PAGE_SIZE: number = 24;
+const FIVE_MINUTES: number = 300000;
 
 export default function Home() {
+  const queryClient = useQueryClient();
+
   const [index, setIndex] = useState<number>(() => {
     if (typeof window !== 'undefined') {
       return parseInt(sessionStorage.getItem('pokedexIndex') || '0', 10);
@@ -35,7 +38,7 @@ export default function Home() {
     }
   }, [index]);
 
-  const fetchPage = async (): Promise<Pokedex> => {
+  const fetchPage = async (index: number): Promise<Pokedex> => {
     const response = await fetch(
       `https://pokeapi.co/api/v2/pokemon?limit=${PAGE_SIZE}&offset=${index}`
     );
@@ -45,9 +48,20 @@ export default function Home() {
 
   const { data, error } = useQuery({
     queryKey: ['pokedex', index],
-    queryFn: fetchPage,
-    staleTime: 1000 * 60 * 5 // Cache data for 5 minutes
+    queryFn: () => fetchPage(index),
+    staleTime: FIVE_MINUTES
   });
+
+  useEffect(() => {
+    if (data?.count && (index < data?.count - PAGE_SIZE)) {
+      queryClient.prefetchQuery({
+        queryKey: ['pokedex', index + (PAGE_SIZE * 3)],
+        queryFn: () => fetchPage(index + (PAGE_SIZE * 3)),
+      });
+    }
+  }, [index, queryClient, data?.count]);
+
+  console.log(JSON.stringify(data))
 
   if (error instanceof Error) return <div>Error: {error.message}</div>;
 
